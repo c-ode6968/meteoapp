@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../home.dart';
+import 'ui/home.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
