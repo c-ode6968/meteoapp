@@ -1,13 +1,13 @@
 // ignore_for_file: unused_local_variable
 
 import 'package:flutter/material.dart';
-import 'package:meteoapp/meteo.dart';
+import 'package:meteoapp/api/api.dart';
 import 'package:meteoapp/model/costanti.dart';
 import 'package:intl/intl.dart';
+import 'package:meteoapp/utility.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, required this.title}) : super(key: key);
-
   final String title;
 
   @override
@@ -19,8 +19,6 @@ State<HomePage> createState() => _HomePageState();
 Constanti myCostanti = Constanti();
 
 class _HomePageState extends State<HomePage> {
-  final MeteoService meteoService =
-      MeteoService('0332ad98e737e68c5fac5e96935461a0');
   late Map<String, dynamic>? weatherData;
   late String cityName = '';
   String temperature = '';
@@ -33,9 +31,8 @@ class _HomePageState extends State<HomePage> {
   initState() {
     super.initState();
     weatherData = {};
-    fetchWeatherDataForCity('Roma');
+    fetchWeatherDataForCity('Paris');
   }
-
   Future<void> fetchWeatherDataForCity(String city) async {
     try {
       final data = await meteoService.fetchWeatherData(city);
@@ -101,8 +98,7 @@ class _HomePageState extends State<HomePage> {
         weatherData?['weather'].isNotEmpty) {
       weatherCondition = weatherData?['weather'][0]['main'];
     }
-    Image.asset(
-      WeatherUtils.getImagePath(weatherCondition, width: 90, height: 90),
+    Image.asset(  WeatherUtils.getImagePath(weatherCondition, width: 90, height: 90),
     );
     return Scaffold(
       appBar: AppBar(
@@ -144,7 +140,7 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 10.0), // Espacement du haut de la page
+            const SizedBox(height: 5.0), // Espacement du haut de la page
 
             SizedBox(
               height: MediaQuery.of(context).size.height,
@@ -161,7 +157,7 @@ class _HomePageState extends State<HomePage> {
                       margin: const EdgeInsets.symmetric(horizontal: 30.0),
                       child: ListTile(
                         contentPadding:
-                            const EdgeInsets.only(top: 20.0, left: 30.0),
+                            const EdgeInsets.only(top: 30.0, left: 30.0),
                         title: Text(
                           formattedDate,
                           style: const TextStyle(color: Colors.black),
@@ -197,16 +193,20 @@ class _HomePageState extends State<HomePage> {
 
                                   const SizedBox(
                                       width:
-                                          90), // Espacement entre le texte et la première image
+                                          40), // Espacement entre le texte et la première image
 
-                                  //    if (weatherData != null &&
-                                  //         weatherData?['weather'] != null &&
-                                  //         weatherData?['weather'].isNotEmpty)
-                                  //       Image.asset(
-                                  //         WeatherUtils.getImagePath(weatherData?['weather'][0]['main'] ?? '', width: 90, height: 90),
-                                  //         width: 90,
-                                  //         height: 90,
-                                  //       )
+                                  if (weatherData != null &&
+                                      weatherData?['weather'] != null &&
+                                      weatherData?['weather'].isNotEmpty)
+                                    Image.asset(
+                                      WeatherUtils.getImagePath(
+                                          weatherData?['weather'][0]['main'] ??
+                                              '',
+                                          width: 90,
+                                          height: 90),
+                                      width: 90,
+                                      height: 90,
+                                    )
                                 ],
                               ),
                               Row(
@@ -222,7 +222,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 25),
 
                               const SizedBox(
                                   height: 20), // Espacement entre les éléments
@@ -232,7 +232,7 @@ class _HomePageState extends State<HomePage> {
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Image.asset(
-                                        'assets/icons/fog.png',
+                                        'assets/icons/rain.png',
                                         width: 50,
                                         height: 50,
                                       ),
@@ -283,7 +283,7 @@ class _HomePageState extends State<HomePage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Image.asset(
-                                        'assets/icons/fog.png',
+                                        'assets/icons/humidity.png',
                                         width: 50,
                                         height: 50,
                                       ),
