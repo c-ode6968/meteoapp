@@ -1,9 +1,9 @@
 // ignore_for_file: unused_local_variable
 
 import 'package:flutter/material.dart';
-import 'package:meteoapp/api/api.dart';
 import 'package:meteoapp/model/costanti.dart';
 import 'package:intl/intl.dart';
+import 'package:meteoapp/service/service.dart';
 import 'package:meteoapp/utility/navigation.dart';
 import 'package:meteoapp/utility/utility.dart';
 
@@ -27,12 +27,18 @@ class _HomePageState extends State<HomePage> {
   String windSpeed = '';
   String rain = '';
   String humidity = '';
+  String visibility = '';
+  String nuvolosita = '';
+  String sunrise = '';
+  String sunset = '';
+  String pressione = '';
+ late MeteoService meteoService; 
 
   @override
   initState() {
     super.initState();
     weatherData = {};
-    fetchWeatherDataForCity('Paris');
+    fetchWeatherDataForCity('Ancona');
   }
 
   Future<void> fetchWeatherDataForCity(String city) async {
@@ -54,11 +60,15 @@ class _HomePageState extends State<HomePage> {
         DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
     if (weatherData != null && weatherData!['main'] != null) {
       temperature = (weatherData?['main']['temp'] - 273.15).toStringAsFixed(1);
-      feelsLike =
-          (weatherData?['main']['feels_like'] - 273.15).toStringAsFixed(1);
+      feelsLike = (weatherData?['main']['feels_like'] - 273.15).toStringAsFixed(1);
       humidity = (weatherData?['main']['hymidity']).toString();
       windSpeed = (weatherData?['main']['wind_speed']).toString();
       rain = (weatherData?['main']['rain']).toString();
+      visibility = (weatherData?['visibility']).toString();
+      nuvolosita = (weatherData?['clouds']['all']).toString();
+      sunrise = (weatherData?['sys']['sunrise']).toString();
+      sunset = (weatherData?['sys']['sunset']).toString();
+      pressione = (weatherData?['pressure']).toString();
     }
 
     String weatherCondition = '';
@@ -306,14 +316,15 @@ class _HomePageState extends State<HomePage> {
                             // Hauteur pour les images
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: 20, // Nombre total d'images à afficher
+                              itemCount: weatherData?.length, // Nombre total d'images à afficher
                               itemBuilder: (BuildContext context, int index) {
+                                var data = weatherData?[index]; // Récupération des données pour cet index
+
                                 return Padding(
                                   padding: const EdgeInsets.all(18.0),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       const Text(
                                         '20:00',
@@ -387,29 +398,60 @@ class _HomePageState extends State<HomePage> {
 
                   // quatrieme card
                   SizedBox(
-                    height: 300.0,
-                    width: 120.0,
+                    height: 330.0,
+                    // Ajuster la largeur selon votre besoin
                     child: Card(
                       color: myCostanti.secondaryColor.withOpacity(.8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25.0),
                       ),
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 30.0,
-                      ),
-                      child: ListTile(
-                        title: const Text('Card 4'),
-                        subtitle: const Text('Description 4'),
-                        onTap: () {
-                          // Action lors du tap sur la carte 4
-                        },
+                      margin: const EdgeInsets.symmetric(horizontal: 30.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          // children: [
+                          //   ListTile(
+                          //       leading: Icon(Icons.visibility, color: Color.fromARGB(255, 80, 4, 49)),
+                          //       title: Text('Visibilità'),
+                          //       trailing:Text(visibility.isNotEmpty ? '$visibility m' : 'N/A',
+                          //       ),
+                          //     ),
+                          //   SizedBox(height: 2),
+                          //   ListTile(
+                          //     leading: Icon(Icons.cloud, color: Color.fromARGB(255, 49, 188, 105)),
+                          //     title: Text('Nuvolosità'),
+                          //     trailing: Text(nuvolosita.isNotEmpty ? '$nuvolosita' : 'N/A'),
+                          //   ),
+                          //   SizedBox(height: 2),
+                          //   ListTile(
+                          //     leading: Icon(Icons.wb_sunny, color: Color.fromARGB(255, 228, 163, 11)),
+                          //     title: Text('Sunrise'),
+                          //     trailing: Text(sunrise.isNotEmpty ? DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(int.parse(sunrise) * 1000)) : 'N/A'),
+                          //   ),
+                          //   SizedBox(height: 2),
+                          //   ListTile(
+                          //     leading: Icon(Icons.nightlight_round, color: Color.fromARGB(255, 165, 232, 11)),
+                          //     title: Text('Sunset'),
+                          //     trailing: Text(sunset.isNotEmpty ? DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(int.parse(sunset) * 1000)) : 'N/A'),
+                          //   ),
+                          //   SizedBox(height: 2),
+                          //   ListTile(
+                          //     leading: Icon(Icons.bathroom_outlined, color: Color.fromARGB(255, 69, 162, 225)),
+                          //     title: Text('Pressione'),
+                          //     trailing: Text(pressione.isNotEmpty ? '$pressione' : 'N/A'),
+                          //   ),
+                          // ],
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 150.0),
-                  const Text('Autre contenu en dessous de la carte'),
-                ],
-              ),
+
+
+
+                  const SizedBox(height: 400.0),
+                  const Text('Autre '),
+          ],),
             ),
           ],
         ),
