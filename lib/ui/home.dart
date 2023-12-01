@@ -2,11 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:meteoapp/api/api.dart';
-import 'package:meteoapp/model/city.dart';
 import 'package:meteoapp/model/costanti.dart';
 import 'package:intl/intl.dart';
 import 'package:meteoapp/service/service.dart';
-import 'package:meteoapp/ui/city.dart';
 import 'package:meteoapp/utility/navigation.dart';
 import 'package:meteoapp/utility/utility.dart';
 
@@ -39,7 +37,9 @@ class _HomePageState extends State<HomePage> {
   String pressione = '';
   String day = '';
   String date = '';
+  // ignore: non_constant_identifier_names
   List<String> temp_min = [];
+  // ignore: non_constant_identifier_names
   List<String> temp_max = [];
   
   get city => null;
@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
       });
     } catch (e) {
       // ignore: avoid_print
-      print('Erreur lors de la récupération des données météo: $e');
+      print('Errore durante la recuperazione de dati: $e');
     }
   }
  
@@ -141,12 +141,12 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 5.0), // Espacement du haut de la page
+            const SizedBox(height: 5.0),
 
             SizedBox(
               height: MediaQuery.of(context).size.height,
               child: ListView(
-                // Utilisation d'une ListView pour le défilement vertical
+                // Utilisazione di una ListView per Scrollare verticalmente
                 children: [
                   SizedBox(
                     height: 300.0,
@@ -193,8 +193,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
 
                                   const SizedBox(
-                                      width:
-                                          40), // Espacement entre le texte et la première image
+                                      width: 40), 
                                   if (weatherData != null &&
                                       weatherData?['weather'] != null &&
                                       weatherData?['weather'].isNotEmpty)
@@ -237,8 +236,7 @@ class _HomePageState extends State<HomePage> {
                                         height: 50,
                                       ),
                                       const SizedBox(
-                                          height:
-                                              5), // Espace entre l'image et le texte
+                                          height:5), 
                                       Text(
                                         weatherData != null &&
                                                 weatherData!
@@ -261,8 +259,7 @@ class _HomePageState extends State<HomePage> {
                                         height: 50,
                                       ),
                                       const SizedBox(
-                                          height:
-                                              5), // Espace entre l'image et le texte
+                                          height:  5),
                                       Text(
                                         weatherData != null &&
                                                 weatherData!
@@ -334,12 +331,11 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           SizedBox(
                             height: 200.0,
-                            // Hauteur pour les images
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: weatherData?['hourlyForecast']?.length ?? 0, // Nombre total d'images à afficher
+                              itemCount: weatherData?['hourlyForecast']?.length ?? 0, 
                               itemBuilder: (BuildContext context, int index) {
-                                var hourlyForecast = weatherData?['hourlyForecast'][index]; // Récupération des données pour cet index
+                                var hourlyForecast = weatherData?['hourlyForecast'][index]; // Recuperare i dati per questo index
 
                                 return Padding(
                                   padding: const EdgeInsets.all(18.0),
@@ -415,7 +411,7 @@ class _HomePageState extends State<HomePage> {
                                             Text(
                                               'Day ${i + 1} ',
                                               style: const TextStyle(fontSize: 18.0),
-                                            ), // Jour de la semaine (exemple)
+                                            ), // Giorno della settimane 
                                           ],
                                         ),
                                         Column(
@@ -424,11 +420,11 @@ class _HomePageState extends State<HomePage> {
                                             Text(
                                               'Date ${i + 1}',
                                               style: const TextStyle(fontSize: 18.0),
-                                            ), // Date (exemple)
+                                            ), // Data
                                           ],
                                         ),
                                         Image.asset(
-                                          'assets/icons/sunny.png', // Remplacez par votre image météo
+                                          'assets/icons/sunny.png',
                                           width: 30,
                                           height: 30,
                                         ),
@@ -438,7 +434,7 @@ class _HomePageState extends State<HomePage> {
                                             Text(
                                               '${temp_min.isNotEmpty ? temp_min[i] : ''}°C',
                                               style: const TextStyle(fontSize: 18.0),
-                                            ), // Température maximale (exemple)
+                                            ), // TempMax
                                           ],
                                         ),
                                         Column(
@@ -447,12 +443,12 @@ class _HomePageState extends State<HomePage> {
                                             Text(
                                               '${temp_max.isNotEmpty ? temp_max[i] : ''}°C',
                                               style: const TextStyle(fontSize: 18.0),
-                                            ), // Température minimale (exemple)
+                                            ), // TempMin
                                           ],
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 10.0), // Espacement entre les lignes
+                                    const SizedBox(height: 10.0),
                                   ],
                                 ),
                               ),
@@ -480,7 +476,6 @@ class _HomePageState extends State<HomePage> {
                   // quatrieme card
                   SizedBox(
                     height: 340.0,
-                    // Ajuster la largeur selon votre besoin
                     child: Card(
                       color: myCostanti.secondaryColor.withOpacity(.8),
                       shape: RoundedRectangleBorder(
@@ -564,7 +559,7 @@ class _HomePageState extends State<HomePage> {
 
     if (cityName != null && cityName.isNotEmpty) {
 
-      city.addCityToList(cityName); // Ajouter la ville à l'aide de la méthode dans la classe City
+      city.addCityToList(cityName); // Ajoute la ville à l'aide de la méthode dans la classe City
     }
   }
   

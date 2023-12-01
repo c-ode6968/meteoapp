@@ -55,9 +55,9 @@ class _CityPageState extends State<CityPage> {
     }
   }
 
-  void addCityToList(String cityName) {
+  void  addCityToList(String cityName) {
     setState(() {
-      addedCities.add(cityName); // Ajoute la ville à la liste des villes ajoutées
+      addedCities.add(cityName); // Ajoute la ville à la liste des villes
     });
   }
   @override
