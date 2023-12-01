@@ -5,6 +5,9 @@ class CityData {
     'London',
     'Tokyo',
     'Sydney',
+    'Ancona',
+    'Milano',
+    'Roma'
   ];
 
   void addCity(String cityName) {

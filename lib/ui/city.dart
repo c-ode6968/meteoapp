@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:meteoapp/ui/home.dart';
 class City {
   String name;
-  String countryCode;
-
-  City(this.name, this.countryCode);
+  City(this.name);
 }
 
 class CityPage extends StatefulWidget {
@@ -26,6 +25,9 @@ class _CityPageState extends State<CityPage> {
     'London',
     'Tokyo',
     'Sydney',
+    'Ancona',
+    'Milano',
+    'Roma',
   ];
   List<String> addedCities = []; // Liste des villes ajoutées
   List<String> filteredCities = [];
@@ -91,8 +93,13 @@ class _CityPageState extends State<CityPage> {
               if (index < filteredCities.length) {
                 return ListTile(
                   title: Text(filteredCities[index]),
-                  onTap: () {
-                    Navigator.pop(context, filteredCities[index]);
+                 onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(selectedCity: filteredCities[index], title: '',),
+                      ),
+                    );
                   },
                 );
               } else {
@@ -100,6 +107,14 @@ class _CityPageState extends State<CityPage> {
                 int addedIndex = index - filteredCities.length;
                 return ListTile(
                   title: Text(addedCities[addedIndex]),
+                  onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(selectedCity: addedCities[addedIndex], title: '',),
+                    ),
+                  );
+                },
                 );
               }
             },
