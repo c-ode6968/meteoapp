@@ -1,16 +1,18 @@
 // ignore_for_file: unused_local_variable
 
 import 'package:flutter/material.dart';
+import 'package:meteoapp/api/api.dart';
+import 'package:meteoapp/model/city.dart';
 import 'package:meteoapp/model/costanti.dart';
 import 'package:intl/intl.dart';
 import 'package:meteoapp/service/service.dart';
+import 'package:meteoapp/ui/city.dart';
 import 'package:meteoapp/utility/navigation.dart';
 import 'package:meteoapp/utility/utility.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, required this.title}) : super(key: key);
   final String title;
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -18,10 +20,13 @@ class HomePage extends StatefulWidget {
 @override
 State<HomePage> createState() => _HomePageState();
 Constanti myCostanti = Constanti();
+//List<City> cities = []; // Liste de villes
 
 class _HomePageState extends State<HomePage> {
   late Map<String, dynamic>? weatherData;
+
   late String cityName = '';
+
   String temperature = '';
   String feelsLike = '';
   String windSpeed = '';
@@ -32,14 +37,23 @@ class _HomePageState extends State<HomePage> {
   String sunrise = '';
   String sunset = '';
   String pressione = '';
- late MeteoService meteoService; 
+  String day = '';
+  String date = '';
+  List<String> temp_min = [];
+  List<String> temp_max = [];
+  
+  get city => null;
+   
+
 
   @override
   initState() {
     super.initState();
+    late MeteoService meteoService;
     weatherData = {};
     fetchWeatherDataForCity('Ancona');
   }
+  
 
   Future<void> fetchWeatherDataForCity(String city) async {
     try {
@@ -47,12 +61,21 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         weatherData = data;
         cityName = data['name'];
+        if (data['list'] != null) {
+          for (int i = 0; i < 5; i++) {
+            temp_min.add((data['list'][i]['main']['temp_min'] - 273.15)
+                .toStringAsFixed(1));
+            temp_max.add((data['list'][i]['main']['temp_max'] - 273.15)
+                .toStringAsFixed(1));
+          }
+        }
       });
     } catch (e) {
-      // Gession des erreurs
+      // ignore: avoid_print
+      print('Erreur lors de la récupération des données météo: $e');
     }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
@@ -60,8 +83,10 @@ class _HomePageState extends State<HomePage> {
         DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
     if (weatherData != null && weatherData!['main'] != null) {
       temperature = (weatherData?['main']['temp'] - 273.15).toStringAsFixed(1);
+      // temp_min = (weatherData?['main']['temp_min']-273.15).toString();
+      // temp_max = (weatherData?['main']['temp_max']-273.15).toString();
       feelsLike = (weatherData?['main']['feels_like'] - 273.15).toStringAsFixed(1);
-      humidity = (weatherData?['main']['hymidity']).toString();
+      humidity = (weatherData?['main']['humidity']).toString();
       windSpeed = (weatherData?['main']['wind_speed']).toString();
       rain = (weatherData?['main']['rain']).toString();
       visibility = (weatherData?['visibility']).toString();
@@ -106,13 +131,9 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.add),
             onPressed: () {
-              //logique pour la recherche
-              showSearch(
-                context: context,
-                delegate: CustomSearchDelegate(),
-              );
+             addCityDialog(context);
             },
           ),
         ],
@@ -316,9 +337,9 @@ class _HomePageState extends State<HomePage> {
                             // Hauteur pour les images
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: weatherData?.length, // Nombre total d'images à afficher
+                              itemCount: weatherData?['hourlyForecast']?.length ?? 0, // Nombre total d'images à afficher
                               itemBuilder: (BuildContext context, int index) {
-                                var data = weatherData?[index]; // Récupération des données pour cet index
+                                var hourlyForecast = weatherData?['hourlyForecast'][index]; // Récupération des données pour cet index
 
                                 return Padding(
                                   padding: const EdgeInsets.all(18.0),
@@ -326,20 +347,20 @@ class _HomePageState extends State<HomePage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      const Text(
-                                        '20:00',
-                                        style: TextStyle(fontSize: 18),
+                                      Text(
+                                        hourlyForecast['time'],
+                                        style: const TextStyle(fontSize: 18),
                                       ),
                                       const SizedBox(height: 20.0),
                                       Image.asset(
-                                        'assets/icons/fog.png',
-                                        width: 80.0, // largeur des images
-                                        height: 80.0, //  hauteur des images
+                                        WeatherUtils.getImagePath(hourlyForecast['weatherCondition'], width: 80, height: 80),
+                                        width: 80.0, 
+                                        height: 80.0, 
                                       ),
                                       const SizedBox(height: 20.0),
-                                      const Text(
-                                        '10 °C',
-                                        style: TextStyle(fontSize: 18),
+                                      Text(
+                                        '${hourlyForecast['temperature']} °C',
+                                        style: const TextStyle(fontSize: 18),
                                       ),
                                     ],
                                   ),
@@ -367,22 +388,82 @@ class _HomePageState extends State<HomePage> {
 
                   // Troisieme card
                   SizedBox(
-                    height: 300.0,
+                    height: 220.0,
                     child: Card(
                       color: myCostanti.secondaryColor.withOpacity(.8),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25.0),
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       margin: const EdgeInsets.symmetric(horizontal: 30.0),
-                      child: ListTile(
-                        title: const Text('Card 3'),
-                        subtitle: const Text('Description 3'),
-                        onTap: () {
-                          // Action lors du tap sur la carte 3
-                        },
+                      child: Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: ListView(
+                          scrollDirection: Axis.vertical,
+                          children: [
+                            for (int i = 0; i < 5; i++)
+                              SizedBox(
+                                width: 300.0,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Day ${i + 1} ',
+                                              style: const TextStyle(fontSize: 18.0),
+                                            ), // Jour de la semaine (exemple)
+                                          ],
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Date ${i + 1}',
+                                              style: const TextStyle(fontSize: 18.0),
+                                            ), // Date (exemple)
+                                          ],
+                                        ),
+                                        Image.asset(
+                                          'assets/icons/sunny.png', // Remplacez par votre image météo
+                                          width: 30,
+                                          height: 30,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '${temp_min.isNotEmpty ? temp_min[i] : ''}°C',
+                                              style: const TextStyle(fontSize: 18.0),
+                                            ), // Température maximale (exemple)
+                                          ],
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '${temp_max.isNotEmpty ? temp_max[i] : ''}°C',
+                                              style: const TextStyle(fontSize: 18.0),
+                                            ), // Température minimale (exemple)
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10.0), // Espacement entre les lignes
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+
+
+            
                   const SizedBox(
                     height: 10.0,
                   ),
@@ -398,7 +479,7 @@ class _HomePageState extends State<HomePage> {
 
                   // quatrieme card
                   SizedBox(
-                    height: 330.0,
+                    height: 340.0,
                     // Ajuster la largeur selon votre besoin
                     child: Card(
                       color: myCostanti.secondaryColor.withOpacity(.8),
@@ -406,98 +487,132 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(25.0),
                       ),
                       margin: const EdgeInsets.symmetric(horizontal: 30.0),
-                      child: const Padding(
-                        padding: EdgeInsets.all(20.0),
+                      child:  Padding(
+                        padding: const EdgeInsets.all(20.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          // children: [
-                          //   ListTile(
-                          //       leading: Icon(Icons.visibility, color: Color.fromARGB(255, 80, 4, 49)),
-                          //       title: Text('Visibilità'),
-                          //       trailing:Text(visibility.isNotEmpty ? '$visibility m' : 'N/A',
-                          //       ),
-                          //     ),
-                          //   SizedBox(height: 2),
-                          //   ListTile(
-                          //     leading: Icon(Icons.cloud, color: Color.fromARGB(255, 49, 188, 105)),
-                          //     title: Text('Nuvolosità'),
-                          //     trailing: Text(nuvolosita.isNotEmpty ? '$nuvolosita' : 'N/A'),
-                          //   ),
-                          //   SizedBox(height: 2),
-                          //   ListTile(
-                          //     leading: Icon(Icons.wb_sunny, color: Color.fromARGB(255, 228, 163, 11)),
-                          //     title: Text('Sunrise'),
-                          //     trailing: Text(sunrise.isNotEmpty ? DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(int.parse(sunrise) * 1000)) : 'N/A'),
-                          //   ),
-                          //   SizedBox(height: 2),
-                          //   ListTile(
-                          //     leading: Icon(Icons.nightlight_round, color: Color.fromARGB(255, 165, 232, 11)),
-                          //     title: Text('Sunset'),
-                          //     trailing: Text(sunset.isNotEmpty ? DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(int.parse(sunset) * 1000)) : 'N/A'),
-                          //   ),
-                          //   SizedBox(height: 2),
-                          //   ListTile(
-                          //     leading: Icon(Icons.bathroom_outlined, color: Color.fromARGB(255, 69, 162, 225)),
-                          //     title: Text('Pressione'),
-                          //     trailing: Text(pressione.isNotEmpty ? '$pressione' : 'N/A'),
-                          //   ),
-                          // ],
+                          children: [
+                            ListTile(
+                                leading: const Icon(Icons.visibility, color: Color.fromARGB(255, 80, 4, 49)),
+                                title: const Text('Visibilità'),
+                                trailing:Text(visibility.isNotEmpty ? '$visibility m' : 'N/D'),
+                                ),
+                            const SizedBox(height: 2),
+                            ListTile(
+                              leading: const Icon(Icons.cloud, color: Color.fromARGB(255, 49, 188, 105)),
+                              title: const Text('Nuvolosità'),
+                              trailing: Text(nuvolosita.isNotEmpty ? nuvolosita : 'N/D'),
+                            ),
+                            const SizedBox(height: 2),
+                            ListTile(
+                              leading: const Icon(Icons.wb_sunny, color: Color.fromARGB(255, 228, 163, 11)),
+                              title: const Text('Sunrise'),
+                              trailing: Text(sunrise.isNotEmpty ? DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(int.parse(sunrise) * 1000)) : 'N/D'),
+                            ),
+                            const SizedBox(height: 2),
+                            ListTile(
+                              leading: const Icon(Icons.nightlight_round, color: Color.fromARGB(255, 165, 232, 11)),
+                              title: const Text('Sunset'),
+                              trailing: Text(sunset.isNotEmpty ? DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(int.parse(sunset) * 1000)) : 'N/D'),
+                            ),
+                            const SizedBox(height: 2),
+                            ListTile(
+                              leading: const Icon(Icons.bathroom_outlined, color: Color.fromARGB(255, 69, 162, 225)),
+                              title: const Text('Pressione'),
+                              trailing: Text(pressione.isNotEmpty ? pressione : 'N/D'),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-
-
-
-                  const SizedBox(height: 400.0),
-                  const Text('Autre '),
-          ],),
+                  const SizedBox(height: 100.0),
+          ]),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class CustomSearchDelegate extends SearchDelegate<String> {
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    // Actions pour la barre de recherche
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
 
-  @override
-  Widget buildLeading(BuildContext context) {
-    // Icône à gauche de la barre de recherche
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
+  
+ Future<void> addCityDialog(BuildContext context) async {
+    TextEditingController cityNameController = TextEditingController();
+
+    String? cityName = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Agiungere una città'),
+          content: TextField(
+            controller: cityNameController,
+            decoration: const InputDecoration(hintText: 'Nome della città'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Aggiungi'),
+              onPressed: () {
+                String cityName = cityNameController.text;
+                Navigator.of(context).pop(cityName);
+              },
+            ),
+          ],
+        );
       },
     );
-  }
 
-  @override
-  Widget buildResults(BuildContext context) {
-    // Affiche les résultats de la recherche
-    return Container(
-        //logique pour afficher les résultats de la recherche
-        );
-  }
+    if (cityName != null && cityName.isNotEmpty) {
 
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    // Suggestions pendant la saisie de la recherche
-    return Container(
-        //logique pour afficher les suggestions de recherche
-        );
+      city.addCityToList(cityName); // Ajouter la ville à l'aide de la méthode dans la classe City
+    }
   }
+  
+
+// class CustomSearchDelegate extends SearchDelegate<String> {
+//   final Function(String) onSearch;
+//   CustomSearchDelegate({required this.onSearch});
+//   @override
+//   List<Widget> buildActions(BuildContext context) {
+//     // Actions pour la barre de recherche
+//     return [
+//       IconButton(
+//         icon: const Icon(Icons.clear),
+//         onPressed: () {
+//           query = '';
+//         },
+//       ),
+//     ];
+//   }
+
+  // @override
+  // Widget buildLeading(BuildContext context) {
+  //   // Icône à gauche de la barre de recherche
+  //   return IconButton(
+  //     icon: const Icon(Icons.arrow_back),
+  //     onPressed: () {
+  //       close(context, '');
+  //     },
+  //   );
+  // }
+
+  // @override
+  // Widget buildResults(BuildContext context) {
+  //   // Affiche les résultats de la recherche
+  //  final selectedCity = query;
+  //   return Container(
+  //     padding: const EdgeInsets.all(16.0),
+  //     child: Text(
+  //       'Afficher les données météo pour $selectedCity ici...',
+  //       style: const TextStyle(fontSize: 18.0),
+  //     ),
+  //   );
+  // }
+
+  // @override
+  // Widget buildSuggestions(BuildContext context) {
+  //   // Suggestions pendant la saisie de la recherche
+  //   return Text('Suggestions pour : $query');
+  // }
+
 }

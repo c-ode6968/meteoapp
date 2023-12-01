@@ -31,7 +31,7 @@ void openMenu(BuildContext context) async {
           // ignore: use_build_context_synchronously
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CityPage()),
+            MaterialPageRoute(builder: (context) => const CityPage(cityName: '',)),
           );
         } else if (result == 2) {
           // ignore: use_build_context_synchronously

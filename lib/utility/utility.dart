@@ -2,7 +2,7 @@
 class WeatherUtils {
   static String getImagePath(String weatherCondition,
       {required int width, required int height}) {
-    if (weatherCondition == 'Sunny') {
+    if (weatherCondition == 'sunny') {
       return 'assets/icons/sunny.png';
     } else if (weatherCondition == 'Clouds') {
       return 'assets/icons/cloudy.png';
@@ -29,11 +29,11 @@ class WeatherUtils {
     } else if(weatherCondition == 'broken_clouds'){
       return 'assets/icons/broken_clouds.png';
     }else if(weatherCondition == 'clear_sky'){
-      return 'assets/icons/clear_sky';
+      return 'assets/icons/clear_sky.png';
     }else if(weatherCondition == 'cloudflare'){
       return 'assets/icons/cloudflare.png';
     }else if(weatherCondition == 'cloudy'){
-      return 'assets/icons/cloudy';
+      return 'assets/icons/cloudy.png';
     }else if(weatherCondition == 'feels_like'){
       return 'assets/icons/feels_like.png';
     }else if(weatherCondition == 'Clear'){
