@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:meteoapp/ui/city.dart';
 import 'package:meteoapp/ui/settings.dart';
 
+import '../ui/about.dart';
+
 void openMenu(BuildContext context) async {
     final RenderBox appBar = context.findRenderObject() as RenderBox;
     final result = await showMenu(
@@ -22,6 +24,10 @@ void openMenu(BuildContext context) async {
           value: 2,
           child: Text('Settings'),
         ),
+        PopupMenuItem(
+          value: 3,
+          child: Text('About'),
+        ),
       ],
     );
 
@@ -38,6 +44,10 @@ void openMenu(BuildContext context) async {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const SettingsPage()),
+          );
+        }else if(result == 3){
+          Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AbaoutPage()),
           );
         }
       }

@@ -7,7 +7,7 @@ class WeatherUtils {
     } else if (weatherCondition == 'Clouds') {
       return 'assets/icons/cloudy.png';
     } else if (weatherCondition == 'Rain') {
-      return 'assets/icons/rainy.png';
+      return 'assets/icons/rain.png';
     } else if (weatherCondition == 'smoke') {
       return 'assets/icons/smoke.png';
     } else if (weatherCondition == 'snow') {
@@ -38,7 +38,9 @@ class WeatherUtils {
       return 'assets/icons/feels_like.png';
     }else if(weatherCondition == 'Clear'){
       return 'assets/icons/clear.png';
-    } else {
+    } else if(weatherCondition == 'Mist'){
+      return 'assets/icons/mist.png';}
+    else {
       return 'assets/icons/default.png';
     }
    

@@ -1,6 +1,8 @@
 // ignore_for_file: unused_local_variable
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:meteoapp/api/api.dart';
 import 'package:meteoapp/model/costanti.dart';
 import 'package:intl/intl.dart';
@@ -10,7 +12,8 @@ import 'package:meteoapp/utility/utility.dart';
 
 class HomePage extends StatefulWidget {
   final String selectedCity;
-  const HomePage({Key? key, required this.title, required this.selectedCity}) : super(key: key);
+  const HomePage({Key? key, required this.title, required this.selectedCity})
+      : super(key: key);
   final String title;
 
   @override
@@ -20,7 +23,6 @@ class HomePage extends StatefulWidget {
 @override
 State<HomePage> createState() => _HomePageState();
 Constanti myCostanti = Constanti();
-//List<City> cities = []; // Liste de villes
 
 class _HomePageState extends State<HomePage> {
   late Map<String, dynamic>? weatherData;
@@ -33,33 +35,109 @@ class _HomePageState extends State<HomePage> {
   String rain = '';
   String humidity = '';
   String visibility = '';
-  String nuvolosita = '';
+  String cloudiness = '';
   String sunrise = '';
   String sunset = '';
-  String pressione = '';
+  String pressure = '';
   String day = '';
   String date = '';
+
   // ignore: non_constant_identifier_names
   List<String> temp_min = [];
+
   // ignore: non_constant_identifier_names
   List<String> temp_max = [];
-  
+
   // ignore: prefer_typing_uninitialized_variables
-  
+
   get city => null;
 
   // get city => null;
+  late MeteoService meteoService;
 
   @override
- void initState() {
+  void initState() {
     super.initState();
-    late MeteoService meteoService;
+    meteoService = MeteoService(apiKey);
     weatherData = {};
-    fetchWeatherDataForCity(widget.selectedCity);
+
+    fetchWeatherForecast(widget.selectedCity);
     addedCities = [];
+    checkLocationAndFetchWeather();
   }
 
-  Future<void> fetchWeatherDataForCity(String city) async {
+
+  Future<void> checkLocationAndFetchWeather() async {
+    await _getCurrentLocation();
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      await showLocationEnableDialog(context);
+    }
+    if (await Geolocator.isLocationServiceEnabled()) {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      await fetchWeatherForecastByCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+    }
+  }
+
+  Future<void> showLocationEnableDialog(context) async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (!serviceEnabled) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Activer la localisation'),
+            content: const Text('Veuillez activer la localisation pour utiliser cette fonctionnalité.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Fermer'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> fetchWeatherForecast(String city) async {
+    try {
+      final data = await meteoService.fetchWeatherData(city);
+      setState(() {
+        weatherData = data;
+        cityName = data['name'];
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print('Errore durante la recuperazione de dati: $e');
+    }
+  }
+
+  Future<void> fetchWeatherForecastByCoordinates(double latitude,
+      double longitude) async {
+    try {
+      final data = await meteoService.fetchWeatherForecastByCoordinates(
+          latitude, longitude);
+      setState(() {
+        weatherData = data;
+        cityName = data['name'];
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Erreur lors de la récupération des données météorologiques: $e');
+      }
+    }
+  }
+
+  /*
+  Future<void> fetchWeatherForecast(String city) async {
     try {
       final data = await meteoService.fetchWeatherData(city);
       setState(() {
@@ -80,11 +158,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+   */
   @override
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
     String formattedDate =
-        DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
+    DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
     if (weatherData != null && weatherData!['main'] != null) {
       temperature = (weatherData?['main']['temp'] - 273.15).toStringAsFixed(1);
       // temp_min = (weatherData?['main']['temp_min']-273.15).toString();
@@ -95,10 +174,10 @@ class _HomePageState extends State<HomePage> {
       windSpeed = (weatherData?['main']['wind_speed']).toString();
       rain = (weatherData?['main']['rain']).toString();
       visibility = (weatherData?['visibility']).toString();
-      nuvolosita = (weatherData?['clouds']['all']).toString();
+      cloudiness = (weatherData?['clouds']['all']).toString();
       sunrise = (weatherData?['sys']['sunrise']).toString();
       sunset = (weatherData?['sys']['sunset']).toString();
-      pressione = (weatherData?['pressure']).toString();
+      pressure = (weatherData?['main']['pressure']).toString();
     }
 
     String weatherCondition = '';
@@ -122,8 +201,8 @@ class _HomePageState extends State<HomePage> {
             ),
             Text(
               weatherData != null &&
-                      weatherData?['weather'] != null &&
-                      weatherData?['weather'].isNotEmpty
+                  weatherData?['weather'] != null &&
+                  weatherData?['weather'].isNotEmpty
                   ? '${weatherData?['weather'][0]['main']}'
                   : 'Loading...',
               style: const TextStyle(fontSize: 12.0),
@@ -148,10 +227,13 @@ class _HomePageState extends State<HomePage> {
           children: [
             const SizedBox(height: 5.0),
             SizedBox(
-              height: MediaQuery.of(context).size.height,
+              height: MediaQuery
+                  .of(context)
+                  .size
+                  .height,
               child: ListView(
-                  // Utilisazione di una ListView per Scrollare verticalmente
-                  children: [
+                // Utilisazione di una ListView per Scrollare verticalmente
+                  children: <Widget>[
                     SizedBox(
                       height: 300.0,
                       child: Card(
@@ -162,7 +244,7 @@ class _HomePageState extends State<HomePage> {
                         margin: const EdgeInsets.symmetric(horizontal: 30.0),
                         child: ListTile(
                           contentPadding:
-                              const EdgeInsets.only(top: 30.0, left: 30.0),
+                          const EdgeInsets.only(top: 20.0, left: 30.0),
                           title: Text(
                             formattedDate,
                             style: const TextStyle(color: Colors.black),
@@ -174,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      MainAxisAlignment.center,
                                       children: [
                                         if (weatherData != null &&
                                             weatherData!.containsKey('main') &&
@@ -182,7 +264,8 @@ class _HomePageState extends State<HomePage> {
                                             weatherData?['main']
                                                 .containsKey('temp'))
                                           Text(
-                                            '${(weatherData?['main']['temp'] - 273.15).toStringAsFixed(0)} °C',
+                                            '${(weatherData?['main']['temp'] -
+                                                273.15).toStringAsFixed(0)} °C',
                                             style: const TextStyle(
                                                 fontSize: 60.0,
                                                 color: Colors.amber),
@@ -190,20 +273,21 @@ class _HomePageState extends State<HomePage> {
                                         else
                                           const CircularProgressIndicator(
                                             valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                    Colors.amber),
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.amber),
                                             strokeWidth: 8,
                                           ),
                                       ],
                                     ),
-                                    const SizedBox(width: 40),
+                                    const SizedBox(height: 70),
+                                    const SizedBox(width: 50),
                                     if (weatherData != null &&
                                         weatherData?['weather'] != null &&
                                         weatherData?['weather'].isNotEmpty)
                                       Image.asset(
                                         WeatherUtils.getImagePath(
                                             weatherData?['weather'][0]
-                                                    ['main'] ??
+                                            ['main'] ??
                                                 '',
                                             width: 90,
                                             height: 90),
@@ -216,12 +300,13 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Text(
                                       weatherData != null &&
-                                              weatherData!
-                                                  .containsKey('main') &&
-                                              weatherData?['main'] != null &&
-                                              weatherData?['main']
-                                                  .containsKey('feels_like')
-                                          ? 'Feels like: ${(weatherData?['main']['feels_like'] - 273.15).toStringAsFixed(0)} °C'
+                                          weatherData!
+                                              .containsKey('main') &&
+                                          weatherData?['main'] != null &&
+                                          weatherData?['main']
+                                              .containsKey('feels_like')
+                                          ? 'Feels like: ${(weatherData?['main']['feels_like'] -
+                                          273.15).toStringAsFixed(0)} °C'
                                           : '',
                                     ),
                                   ],
@@ -230,12 +315,12 @@ class _HomePageState extends State<HomePage> {
 
                                 const SizedBox(
                                     height:
-                                        20), // Espacement entre les éléments
+                                    20), // Espacement entre les éléments
                                 Row(
                                   children: [
                                     Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                      MainAxisAlignment.start,
                                       children: [
                                         Image.asset(
                                           'assets/icons/rain.png',
@@ -245,21 +330,22 @@ class _HomePageState extends State<HomePage> {
                                         const SizedBox(height: 5),
                                         Text(
                                           weatherData != null &&
-                                                  weatherData!
-                                                      .containsKey('rain') &&
-                                                  weatherData?['rain'] != null
-                                              ? '${weatherData?['rain'] ?? ''} mm'
-                                              : 'no data',
+                                              weatherData!
+                                                  .containsKey('rain') &&
+                                              weatherData?['rain'] != null
+                                              ? '${weatherData?['rain']['1h'] ??
+                                              ''} mm'
+                                              : 'N/D',
                                         ),
                                         const Text('Pioggia'),
                                       ],
                                     ),
                                     const SizedBox(
                                         width:
-                                            35), // Espacement entre les images
+                                        35), // Espacement entre les images
                                     Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      MainAxisAlignment.center,
                                       children: [
                                         Image.asset(
                                           'assets/icons/fog.png',
@@ -269,12 +355,12 @@ class _HomePageState extends State<HomePage> {
                                         const SizedBox(height: 5),
                                         Text(
                                           weatherData != null &&
-                                                  weatherData!
-                                                      .containsKey('wind') &&
-                                                  weatherData?['wind'] !=
-                                                      null &&
-                                                  weatherData?['wind']
-                                                      .containsKey('speed')
+                                              weatherData!
+                                                  .containsKey('wind') &&
+                                              weatherData?['wind'] !=
+                                                  null &&
+                                              weatherData?['wind']
+                                                  .containsKey('speed')
                                               ? '${weatherData?['wind']['speed']} m/s'
                                               : '',
                                         ),
@@ -283,10 +369,10 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     const SizedBox(
                                         width:
-                                            35), // Espacement entre les images
+                                        30), // Espacement entre les images
                                     Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      MainAxisAlignment.center,
                                       children: [
                                         Image.asset(
                                           'assets/icons/humidity.png',
@@ -296,12 +382,12 @@ class _HomePageState extends State<HomePage> {
                                         const SizedBox(height: 5),
                                         Text(
                                           weatherData != null &&
-                                                  weatherData!
-                                                      .containsKey('main') &&
-                                                  weatherData?['main'] !=
-                                                      null &&
-                                                  weatherData?['main']
-                                                      .containsKey('humidity')
+                                              weatherData!
+                                                  .containsKey('main') &&
+                                              weatherData?['main'] !=
+                                                  null &&
+                                              weatherData?['main']
+                                                  .containsKey('humidity')
                                               ? '${weatherData?['main']['humidity']} %'
                                               : '',
                                         ),
@@ -321,9 +407,7 @@ class _HomePageState extends State<HomePage> {
                     const Center(
                       child: Text(
                         'Durante le giornata',
-                        style: TextStyle(
-                            fontSize: 20.0,
-                            color: Color.fromARGB(255, 15, 9, 9)),
+                        style: TextStyle(fontSize: 20.0, color: Colors.black),
                       ),
                     ),
                     const SizedBox(height: 20.0),
@@ -345,30 +429,28 @@ class _HomePageState extends State<HomePage> {
                               height: 200.0,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                itemCount:
-                                    weatherData?['hourlyForecast']?.length ?? 0,
+                                itemCount: weatherData?['list']?.length ?? 0,
                                 itemBuilder: (BuildContext context, int index) {
-                                  var hourlyForecast = weatherData?[
-                                          'hourlyForecast'][
-                                      index]; // Recuperare i dati per questo index
+                                  var hourlyForecast = weatherData?['list'][
+                                  index]; // Recuperare i dati per questo index
 
                                   return Padding(
                                     padding: const EdgeInsets.all(18.0),
                                     child: Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      MainAxisAlignment.center,
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                      CrossAxisAlignment.center,
                                       children: [
                                         Text(
-                                          hourlyForecast['time'],
+                                          hourlyForecast['dt_txt'],
                                           style: const TextStyle(fontSize: 18),
                                         ),
                                         const SizedBox(height: 20.0),
                                         Image.asset(
                                           WeatherUtils.getImagePath(
                                               hourlyForecast[
-                                                  'weatherCondition'],
+                                              'weatherCondition'],
                                               width: 80,
                                               height: 80),
                                           width: 80.0,
@@ -376,7 +458,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         const SizedBox(height: 20.0),
                                         Text(
-                                          '${hourlyForecast['temperature']} °C',
+                                          '${hourlyForecast['main']['temp']} °C',
                                           style: const TextStyle(fontSize: 18),
                                         ),
                                       ],
@@ -418,20 +500,20 @@ class _HomePageState extends State<HomePage> {
                           child: ListView(
                             scrollDirection: Axis.vertical,
                             children: [
-                              for (int i = 0; i < 5; i++)
+                              for (int i = 0; i < 10; i++)
                                 SizedBox(
                                   width: 300.0,
                                   child: Column(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                         children: [
                                           Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Day ${i + 1} ',
@@ -442,7 +524,7 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                           Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Date ${i + 1}',
@@ -458,10 +540,12 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                           Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.end,
+                                            CrossAxisAlignment.end,
                                             children: [
                                               Text(
-                                                '${temp_min.isNotEmpty ? temp_min[i] : ''}°C',
+                                                '${temp_min.isNotEmpty
+                                                    ? temp_min[i]
+                                                    : ''}°C',
                                                 style: const TextStyle(
                                                     fontSize: 18.0),
                                               ), // TempMax
@@ -469,10 +553,12 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                           Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.end,
+                                            CrossAxisAlignment.end,
                                             children: [
                                               Text(
-                                                '${temp_max.isNotEmpty ? temp_max[i] : ''}°C',
+                                                '${temp_max.isNotEmpty
+                                                    ? temp_max[i]
+                                                    : ''}°C',
                                                 style: const TextStyle(
                                                     fontSize: 18.0),
                                               ), // TempMin
@@ -532,7 +618,7 @@ class _HomePageState extends State<HomePage> {
                                     color: Color.fromARGB(255, 49, 188, 105)),
                                 title: const Text('Nuvolosità'),
                                 trailing: Text(
-                                    nuvolosita.isNotEmpty ? nuvolosita : 'N/D'),
+                                    cloudiness.isNotEmpty ? cloudiness : 'N/D'),
                               ),
                               const SizedBox(height: 2),
                               ListTile(
@@ -541,8 +627,8 @@ class _HomePageState extends State<HomePage> {
                                 title: const Text('Sunrise'),
                                 trailing: Text(sunrise.isNotEmpty
                                     ? DateFormat('HH:mm').format(
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                            int.parse(sunrise) * 1000))
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                        int.parse(sunrise) * 1000))
                                     : 'N/D'),
                               ),
                               const SizedBox(height: 2),
@@ -552,8 +638,8 @@ class _HomePageState extends State<HomePage> {
                                 title: const Text('Sunset'),
                                 trailing: Text(sunset.isNotEmpty
                                     ? DateFormat('HH:mm').format(
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                            int.parse(sunset) * 1000))
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                        int.parse(sunset) * 1000))
                                     : 'N/D'),
                               ),
                               const SizedBox(height: 2),
@@ -562,7 +648,7 @@ class _HomePageState extends State<HomePage> {
                                     color: Color.fromARGB(255, 69, 162, 225)),
                                 title: const Text('Pressione'),
                                 trailing: Text(
-                                    pressione.isNotEmpty ? pressione : 'N/D'),
+                                    pressure.isNotEmpty ? pressure : 'N/D'),
                               ),
                             ],
                           ),
@@ -605,9 +691,37 @@ class _HomePageState extends State<HomePage> {
 
     if (cityName != null && cityName.isNotEmpty) {
       setState(() {
-        addedCities.add(cityName); // Ajoute la nouvelle ville à la liste addedCities
+        addedCities
+            .add(cityName); // Ajoute la nouvelle ville à la liste addedCities
       });
     }
-
   }
+
+
+//Utilizzo della localisazione
+
+  _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+  }
+
 }
