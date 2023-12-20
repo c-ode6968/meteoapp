@@ -47,7 +47,7 @@ void openMenu(BuildContext context) async {
           );
         }else if(result == 3){
           Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const AbaoutPage()),
+            MaterialPageRoute(builder: (context) => const AboutPage()),
           );
         }
       }

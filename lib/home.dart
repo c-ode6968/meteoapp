@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 
 @override
 State<HomePage> createState() => _HomePageState();
-Constanti myCostanti = Constanti();
+Costanti myCostanti = Costanti();
 
 class _HomePageState extends State<HomePage> {
   late Map<String, dynamic>? weatherData;
@@ -26,6 +26,8 @@ class _HomePageState extends State<HomePage> {
   String windSpeed = '';
   String rain = '';
   String humidity = '';
+
+  get meteoService => null;
 
   @override
   initState() {

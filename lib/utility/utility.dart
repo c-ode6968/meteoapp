@@ -43,6 +43,7 @@ class WeatherUtils {
     else {
       return 'assets/icons/default.png';
     }
-   
   }
+
+
 }
