@@ -6,19 +6,19 @@ I dati meteorologici sono ottenuti in tempo reale grazie all'API di OpenWeatherM
 
 ## Funzionalità
 
-- Visualizzazione dati meteo:
+### Visualizzazione dati meteo:
 
-- - Previsioni per l'attuale giornata.
-- - Previsioni ogni 3 ore per la giornata.
-- - Previsioni per i prossimi cinque giorni.
+- Previsioni per l'attuale giornata.
+- Previsioni ogni 3 ore per la giornata.
+- Previsioni per i prossimi cinque giorni.
 
-- Localizzazione automatica:
+### Localizzazione automatica:
 
 Alla prima apertura dell'applicazione, viene richiesta all'utente l'attivazione della localizzazione del telefono.
 Se l'utente accetta, i dati meteo della sua posizione attuale vengono recuperati e mostrati a schermo.
 In caso di rifiuto, viene visualizzata una città predefinita (selezionata in cityList.dart).
 
-- Filtraggio delle città:
+### Filtraggio delle città:
 
 Possibilità di filtrare una città nella lista delle città (file cityList.dart), per trovare facilmente una citta 
 
