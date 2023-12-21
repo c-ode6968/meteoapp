@@ -1,16 +1,50 @@
-# meteoapp
+# App Meteo
 
-A new Flutter project.
+Benvenuto nell'applicazione meteo! Questa app permette di consultare facilmente 
+le previsioni del tempo per la giornata, le prossime ore (ogni 3 ore) e i prossimi cinque giorni. 
+I dati meteorologici sono ottenuti in tempo reale grazie all'API di OpenWeatherMap.
 
-## Getting Started
+## Funzionalità
 
-This project is a starting point for a Flutter application.
+- Visualizzazione dati meteo:
 
-A few resources to get you started if this is your first Flutter project:
+- - Previsioni per l'attuale giornata.
+- - Previsioni ogni 3 ore per la giornata.
+- - Previsioni per i prossimi cinque giorni.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Localizzazione automatica:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Alla prima apertura dell'applicazione, viene richiesta all'utente l'attivazione della localizzazione del telefono.
+Se l'utente accetta, i dati meteo della sua posizione attuale vengono recuperati e mostrati a schermo.
+In caso di rifiuto, viene visualizzata una città predefinita (selezionata in cityList.dart).
+
+- Filtraggio delle città:
+
+Possibilità di filtrare una città nella lista delle città (file cityList.dart), per trovare facilmente una citta 
+
+## Configurazione
+
+1 - API OpenWeatherMap:
+Ottieni una chiave API gratuita sul sito di OpenWeatherMap o usare direttamente questa chiave API: '0332ad98e737e68c5fac5e96935461a0'
+da sostituire nel codice nella directori (lib/api/api.dart)
+
+2 - Autorizzazioni Android:
+
+L'aggiungere delle autorizzazioni nel file (AndroidManifest.xml) sono necessarie sono neccessari  per usare la connessione internet.
+
+## Installazione
+
+- Clonare il repository:
+git clone https://github.com/c-ode6968/meteoapp.git
+
+- Installare le dipendenze e aggiornare se neccessario:
+
+flutter pub get
+
+- Eseguire l'applicazione:
+
+flutter run
+
+## Autori
+- Toyem Ryan
+- Djouaka Lionel
