@@ -7,8 +7,11 @@ import 'package:meteoapp/api/api.dart';
 import 'package:meteoapp/model/costanti.dart';
 import 'package:intl/intl.dart';
 import 'package:meteoapp/service/service.dart';
+import 'package:meteoapp/utility/appState.dart';
 import 'package:meteoapp/utility/navigation.dart';
 import 'package:meteoapp/utility/utility.dart';
+import 'package:provider/provider.dart';
+import 'city.dart';
 
 class HomePage extends StatefulWidget {
   final String selectedCity;
@@ -66,7 +69,6 @@ class _HomePageState extends State<HomePage> {
     checkLocationAndFetchWeather();
   }
 
-
   Future<void> checkLocationAndFetchWeather() async {
     await _getCurrentLocation();
     if (!await Geolocator.isLocationServiceEnabled()) {
@@ -91,14 +93,15 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('Activer la localisation'),
-            content: const Text('Veuillez activer la localisation pour utiliser cette fonctionnalité.'),
+            title: const Text('Abilita posizione'),
+            content: const Text(
+                'Abilita la posizione per utilizzare questa funzione.'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text('Fermer'),
+                child: const Text('Chiudere'),
               ),
             ],
           );
@@ -116,7 +119,7 @@ class _HomePageState extends State<HomePage> {
       });
     } catch (e) {
       // ignore: avoid_print
-      print('Errore durante la recuperazione de dati: $e');
+      print('Errore durante il recupero dei dati:$e');
     }
   }
 
@@ -131,7 +134,7 @@ class _HomePageState extends State<HomePage> {
       });
     } catch (e) {
       if (kDebugMode) {
-        print('Erreur lors de la récupération des données météorologiques: $e');
+        print('Errore durante il recupero dei dati meteo: $e');
       }
     }
   }
@@ -217,7 +220,18 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () async {
-              addCityDialog(context);
+              //await addCityDialog(context);
+              final selectedCityName  = await addCityDialog(context);
+              if (cityName.isNotEmpty) {
+                await fetchWeatherForecast(cityName);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        CityPage(addedCities: addedCities, cityName: cityName),
+                  ),
+                );
+              };
             },
           ),
         ],
@@ -315,7 +329,7 @@ class _HomePageState extends State<HomePage> {
 
                                 const SizedBox(
                                     height:
-                                    20), // Espacement entre les éléments
+                                    20), // Spaziatura tra gli elementi
                                 Row(
                                   children: [
                                     Column(
@@ -342,7 +356,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     const SizedBox(
                                         width:
-                                        35), // Espacement entre les images
+                                        35), // Spaziatura tra le immagini
                                     Column(
                                       mainAxisAlignment:
                                       MainAxisAlignment.center,
@@ -369,7 +383,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     const SizedBox(
                                         width:
-                                        30), // Espacement entre les images
+                                        30),// Spaziatura tra le immagini
                                     Column(
                                       mainAxisAlignment:
                                       MainAxisAlignment.center,
@@ -664,10 +678,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+
   Future<void> addCityDialog(BuildContext context) async {
     TextEditingController cityNameController = TextEditingController();
 
-    String? cityName = await showDialog<String>(
+    String? cityName = await showDialog<String?>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -690,13 +705,11 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (cityName != null && cityName.isNotEmpty) {
-      setState(() {
-        addedCities
-            .add(cityName); // Ajoute la nouvelle ville à la liste addedCities
-      });
+
+      Provider.of<AppState>(context, listen: false).addCity(cityName);
+      await fetchWeatherForecast(cityName);
     }
   }
-
 
 //Utilizzo della localisazione
 
@@ -723,5 +736,4 @@ class _HomePageState extends State<HomePage> {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
   }
-
 }

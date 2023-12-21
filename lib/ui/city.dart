@@ -1,72 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:meteoapp/ui/home.dart';
-class City {
-  String name;
-  City(this.name);
-}
+
+import 'cityList.dart';
+
 
 class CityPage extends StatefulWidget {
-  const CityPage({Key? key, required String cityName}) : super(key: key);
+  final List<String> addedCities;
+  const CityPage({Key? key, required String cityName, required this.addedCities}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _CityPageState createState() => _CityPageState();
-
-  void addCityToList(String s, String t) {}
-  
 }
 
 
 class _CityPageState extends State<CityPage> {
   final TextEditingController _searchController = TextEditingController();
-  List<String> cities = [
-    'Paris',
-    'New York',
-    'London',
-    'Tokyo',
-    'Sydney',
-    'Ancona',
-    'Milano',
-    'Roma',
-  ];
-  List<String> addedCities = []; // Liste des villes ajoutées
+  late CityData cityData;
+  List<String> addedCities = []; // Elenco delle città aggiunte
   List<String> filteredCities = [];
-  
+
+
 
   @override
   void initState() {
-    filteredCities = cities;
     super.initState();
+    cityData = CityData();
+    addedCities = widget.addedCities;
+    filteredCities = cityData.cities;
   }
+
 
   void filterCities(String query) {
     if (query.isNotEmpty) {
       List<String> tempList = [];
-      for (var city in cities) {
+      for (var city in cityData.cities) {
         if (city.toLowerCase().contains(query.toLowerCase())) {
           tempList.add(city);
         }
       }
       setState(() {
-        filteredCities = tempList;
+        filteredCities = tempList.cast<String>();
       });
     } else {
       setState(() {
-        filteredCities = cities;
+        filteredCities = cityData.cities.cast<String>();
       });
     }
   }
 
+
+
   void  addCityToList(String cityName) {
     setState(() {
-      addedCities.add(cityName); // Ajoute la ville à la liste des villes
+      addedCities.add(cityName); // Aggiunge la città all'elenco delle città
     });
   }
   @override
   Widget build(BuildContext context) {
+    addedCities.forEach((city) {
+      //print(city);
+    });
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Liste des Villes'),
+        title: const Text('Elenco delle città'),
       ),
       body: Column(
         children: [
@@ -75,7 +71,7 @@ class _CityPageState extends State<CityPage> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                labelText: 'Rechercher une ville',
+                labelText: 'Cerca una città',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
@@ -88,33 +84,37 @@ class _CityPageState extends State<CityPage> {
           ),
           Expanded(
             child: ListView.builder(
-            itemCount: filteredCities.length + addedCities.length,
-            itemBuilder: (context, index) {
-              if (index < filteredCities.length) {
-                return ListTile(
-                  title: Text(filteredCities[index]),
-                 onTap: () {
+              itemCount: filteredCities.length + widget.addedCities.length,
+              itemBuilder: (context, index) {
+                if (index < filteredCities.length) {
+                  return ListTile(
+                    title: Text(filteredCities[index]),
+                   onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(selectedCity: filteredCities[index],
+                            title: '',
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  // Mostra le città aggiunte
+                  int addedIndex = index - filteredCities.length;
+                  return ListTile(
+                    title: Text(widget.addedCities[addedIndex]),
+                    onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => HomePage(selectedCity: filteredCities[index], title: '',),
+                        builder: (context) => HomePage(selectedCity: widget.addedCities[addedIndex],
+                          title: '',
+                        ),
                       ),
                     );
                   },
-                );
-              } else {
-                // Afficher les villes ajoutées
-                int addedIndex = index - filteredCities.length;
-                return ListTile(
-                  title: Text(addedCities[addedIndex]),
-                  onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(selectedCity: addedCities[addedIndex], title: '',),
-                    ),
-                  );
-                },
                 );
               }
             },

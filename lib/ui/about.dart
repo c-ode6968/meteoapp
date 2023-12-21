@@ -10,7 +10,7 @@ class AboutPage extends StatelessWidget {
 
   //Gestion des URL .
   Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url); //Conversion des Url en Uri.
+    final Uri uri = Uri.parse(url); //Conversione degli URL in Uri.
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
@@ -33,11 +33,22 @@ class AboutPage extends StatelessWidget {
         ),
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(18.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Padding(padding: const EdgeInsets.only(top: 5.0),
+                  child:  Image.asset(
+                    'assets/icons/fog.png',
+                    width: 110.0,
+                    height: 110.0,
+                  ),
+                ),
+
+                const SizedBox(
+                  height: 20.0,
+                ),
                 Text(
                   constants.presentationText,
                   style: const TextStyle(
@@ -60,12 +71,17 @@ class AboutPage extends StatelessWidget {
                         Icons.arrow_forward,
                         color: Colors.blue,
                       ),
-                      SizedBox(width: 10.0, height: 8,),
+                      SizedBox(
+                        width: 10.0,
+                        height: 8,
+                      ),
                       Text(
                         'Pagina Githup Toyem',
                         style: TextStyle(
                           color: Colors.blue,
-                          decoration: TextDecoration.underline,
+                          decoration: TextDecoration.none,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -80,14 +96,19 @@ class AboutPage extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.arrow_forward,
-                        color: Colors.blue,
+                        color: Colors.blueAccent,
                       ),
-                      SizedBox(width: 15.0, height: 8,),
+                      SizedBox(
+                        width: 15.0,
+                        height: 8,
+                      ),
                       Text(
                         'Pagina Githup Lionel',
                         style: TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
+                          color: Colors.black,
+                          decoration: TextDecoration.none,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold
                         ),
                       ),
                     ],
