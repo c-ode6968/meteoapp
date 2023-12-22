@@ -28,6 +28,8 @@ State<HomePage> createState() => _HomePageState();
 Costanti myCostanti = Costanti();
 
 class _HomePageState extends State<HomePage> {
+  bool isGeolocationEnabled = true;
+
   late Map<String, dynamic>? weatherData;
   List<String> addedCities = [];
   late String cityName = '';
@@ -64,7 +66,7 @@ class _HomePageState extends State<HomePage> {
     meteoService = MeteoService(apiKey);
     weatherData = {};
 
-    fetchWeatherForecast(widget.selectedCity);
+    fetchWeatherForecastByCity(widget.selectedCity);
     addedCities = [];
     checkLocationAndFetchWeather();
   }
@@ -110,9 +112,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> fetchWeatherForecast(String city) async {
+  Future<void> fetchWeatherForecastByCity(String city) async {
     try {
-      final data = await meteoService.fetchWeatherData(city);
+      final data = await meteoService.fetchWeatherForecastByCity(city);
       setState(() {
         weatherData = data;
         cityName = data['name'];
@@ -139,29 +141,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /*
-  Future<void> fetchWeatherForecast(String city) async {
-    try {
-      final data = await meteoService.fetchWeatherData(city);
-      setState(() {
-        weatherData = data;
-        cityName = data['name'];
-        if (data['list'] != null) {
-          for (int i = 0; i < 5; i++) {
-            temp_min.add((data['list'][i]['main']['temp_min'] - 273.15)
-                .toStringAsFixed(1));
-            temp_max.add((data['list'][i]['main']['temp_max'] - 273.15)
-                .toStringAsFixed(1));
-          }
-        }
-      });
-    } catch (e) {
-      // ignore: avoid_print
-      print('Errore durante la recuperazione de dati: $e');
-    }
-  }
-
-   */
   @override
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
@@ -169,8 +148,8 @@ class _HomePageState extends State<HomePage> {
     DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
     if (weatherData != null && weatherData!['main'] != null) {
       temperature = (weatherData?['main']['temp'] - 273.15).toStringAsFixed(1);
-      // temp_min = (weatherData?['main']['temp_min']-273.15).toString();
-      // temp_max = (weatherData?['main']['temp_max']-273.15).toString();
+      //temp_min = (weatherData?['main']['temp_min']-273.15) .toStringAsFixed(1) ;
+      //temp_max = (weatherData?['main']['temp_max']-273.15) .toStringAsFixed(1);
       feelsLike =
           (weatherData?['main']['feels_like'] - 273.15).toStringAsFixed(1);
       humidity = (weatherData?['main']['humidity']).toString();
@@ -216,14 +195,16 @@ class _HomePageState extends State<HomePage> {
           icon: const Icon(Icons.menu),
           onPressed: () => openMenu(context),
         ),
+
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            padding: const EdgeInsets.only(right: 23.0),
+            icon: const Icon(Icons.search, size: 30.0,),
             onPressed: () async {
               //await addCityDialog(context);
-              final selectedCityName  = await addCityDialog(context);
+              final selectedCityName = await seachCityDialog(context);
               if (cityName.isNotEmpty) {
-                await fetchWeatherForecast(cityName);
+                await fetchWeatherForecastByCity(cityName);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -231,7 +212,8 @@ class _HomePageState extends State<HomePage> {
                         CityPage(addedCities: addedCities, cityName: cityName),
                   ),
                 );
-              };
+              }
+              ;
             },
           ),
         ],
@@ -328,8 +310,7 @@ class _HomePageState extends State<HomePage> {
                                 const SizedBox(height: 20),
 
                                 const SizedBox(
-                                    height:
-                                    20), // Spaziatura tra gli elementi
+                                    height: 20), // Spaziatura tra gli elementi
                                 Row(
                                   children: [
                                     Column(
@@ -383,7 +364,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     const SizedBox(
                                         width:
-                                        30),// Spaziatura tra le immagini
+                                        30), // Spaziatura tra le immagini
                                     Column(
                                       mainAxisAlignment:
                                       MainAxisAlignment.center,
@@ -441,43 +422,79 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             SizedBox(
                               height: 200.0,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: weatherData?['list']?.length ?? 0,
-                                itemBuilder: (BuildContext context, int index) {
-                                  var hourlyForecast = weatherData?['list'][
-                                  index]; // Recuperare i dati per questo index
+                              child: FutureBuilder<List<Map<String, dynamic>>>(
+                                future: meteoService.fetchHourlyWeatherForecast(
+                                    widget.selectedCity),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  } else if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return const Text(
+                                        'Nessuna previsione oraria disponibile');
+                                  } else {
+                                    List<Map<String, dynamic>>
+                                    hourlyForecastList = snapshot.data!;
+                                    return ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: hourlyForecastList.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        var hourlyForecast =
+                                        hourlyForecastList[index];
 
-                                  return Padding(
-                                    padding: const EdgeInsets.all(18.0),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          hourlyForecast['dt_txt'],
-                                          style: const TextStyle(fontSize: 18),
-                                        ),
-                                        const SizedBox(height: 20.0),
-                                        Image.asset(
-                                          WeatherUtils.getImagePath(
-                                              hourlyForecast[
-                                              'weatherCondition'],
-                                              width: 80,
-                                              height: 80),
-                                          width: 80.0,
-                                          height: 80.0,
-                                        ),
-                                        const SizedBox(height: 20.0),
-                                        Text(
-                                          '${hourlyForecast['main']['temp']} °C',
-                                          style: const TextStyle(fontSize: 18),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                                        String weatherImagePath =
+                                        WeatherUtils.getImagePath(
+                                          weatherData?['weather'][0]['main'] ??
+                                              '',
+                                          width: 30,
+                                          height: 30,
+                                        );
+
+                                        return Padding(
+                                          padding: const EdgeInsets.all(18.0),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                DateFormat('HH:mm').format(
+                                                    DateTime.parse(
+                                                        hourlyForecast[
+                                                        'dt_txt'])),
+                                                style: const TextStyle(
+                                                    fontSize: 18),
+                                              ),
+                                              const SizedBox(height: 20.0),
+                                              if (weatherData != null &&
+                                                  weatherData?['weather'] !=
+                                                      null &&
+                                                  weatherData?['weather']
+                                                      .isNotEmpty)
+                                                Image.asset(
+                                                  weatherImagePath,
+                                                  width: 50,
+                                                  height: 50,
+                                                ),
+                                              const SizedBox(height: 20.0),
+                                              Text(
+                                                '${(hourlyForecast['main']['temp'] -
+                                                    273.15).toStringAsFixed(
+                                                    1) ?? ''} °C',
+                                                style: const TextStyle(
+                                                    fontSize: 18),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }
                                 },
                               ),
                             ),
@@ -511,80 +528,154 @@ class _HomePageState extends State<HomePage> {
                         margin: const EdgeInsets.symmetric(horizontal: 30.0),
                         child: Padding(
                           padding: const EdgeInsets.all(15.0),
-                          child: ListView(
-                            scrollDirection: Axis.vertical,
-                            children: [
-                              for (int i = 0; i < 10; i++)
-                                SizedBox(
-                                  width: 300.0,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
+                          child: FutureBuilder<List<Map<String, dynamic>>>(
+                            future: meteoService
+                                .fetchDailyWeatherForecast(widget.selectedCity),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return const Text(
+                                    'Nessuna previsione giornaliera disponibile');
+                              } else {
+                                List<Map<String, dynamic>> dailyForecastList =
+                                snapshot.data!;
+
+                                return ListView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  itemCount: dailyForecastList.length > 5
+                                      ? 5
+                                      : dailyForecastList.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    var dailyForecast =
+                                    dailyForecastList[index];
+
+                                    List<Map<String, dynamic>> filteredData =
+                                    [];
+                                    List<double> minTemps = [];
+                                    List<double> maxTemps = [];
+
+                                    // Scorrere l'elenco dei dati originali
+                                    for (int i = 0;
+                                    i < dailyForecastList.length;
+                                    i++) {
+                                      var dailyForecast = dailyForecastList[i];
+
+                                      // Ottieni la data corrente
+                                      DateTime currentDate = DateTime.parse(
+                                          dailyForecast['dt_txt'] ?? '');
+
+                                      // Controlla se la data non è già nell'elenco filtrato
+                                      if (!filteredData.any((element) =>
+                                      DateTime
+                                          .parse(
+                                          element['dt_txt'] ?? '')
+                                          .day ==
+                                          currentDate.day)) {
+                                        // Aggiunge la prima voce di questo giorno all'elenco filtrato
+                                        filteredData.add(dailyForecast);
+
+                                        minTemps.add(dailyForecast['main']
+                                        ['temp_min'] ??
+                                            0.0);
+                                        maxTemps.add(dailyForecast['main']
+                                        ['temp_max'] ??
+                                            0.0);
+                                      }
+                                    }
+                                    double totalMinTemp = minTemps.fold(
+                                        0.0,
+                                            (previous, current) =>
+                                        previous + current);
+                                    double totalMaxTemp = maxTemps.fold(
+                                        0.0,
+                                            (previous, current) =>
+                                        previous + current);
+
+                                    double moyenneMinTemp = totalMinTemp /
+                                        filteredData.length.toDouble();
+                                    double moyenneMaxTemp = totalMaxTemp /
+                                        filteredData.length.toDouble();
+
+                                    String weatherImagePath;
+                                    weatherImagePath =
+                                        WeatherUtils.getImagePath(
+                                          filteredData[index]['weather'][0]
+                                          ['main'] ??
+                                              '',
+                                          width: 30,
+                                          height: 30,
+                                        );
+
+                                    return SizedBox(
+                                      width: 300.0,
+                                      child: Column(
                                         mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                          Row(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Text(
-                                                'Day ${i + 1} ',
-                                                style: const TextStyle(
-                                                    fontSize: 18.0),
-                                              ), // Giorno della settimane
+                                              Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    DateFormat('EEEE').format(
+                                                        DateTime.parse(
+                                                            filteredData[index][
+                                                            'dt_txt'] ??
+                                                                '')),
+                                                    style: const TextStyle(
+                                                        fontSize: 18.0),
+                                                  ),
+                                                ],
+                                              ),
+                                              Image.asset(
+                                                weatherImagePath,
+                                                width: 30,
+                                                height: 30,
+                                              ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                                children: [
+                                                  Text(
+                                                    '${moyenneMinTemp
+                                                        .toStringAsFixed(0)}°C',
+                                                    style: const TextStyle(
+                                                        fontSize: 18.0),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                                children: [
+                                                  Text(
+                                                    '${moyenneMaxTemp
+                                                        .toStringAsFixed(0)}°C',
+                                                    style: const TextStyle(
+                                                        fontSize: 18.0),
+                                                  ),
+                                                ],
+                                              ),
                                             ],
                                           ),
-                                          Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Date ${i + 1}',
-                                                style: const TextStyle(
-                                                    fontSize: 18.0),
-                                              ), // Data
-                                            ],
-                                          ),
-                                          Image.asset(
-                                            'assets/icons/sunny.png',
-                                            width: 30,
-                                            height: 30,
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                '${temp_min.isNotEmpty
-                                                    ? temp_min[i]
-                                                    : ''}°C',
-                                                style: const TextStyle(
-                                                    fontSize: 18.0),
-                                              ), // TempMax
-                                            ],
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                '${temp_max.isNotEmpty
-                                                    ? temp_max[i]
-                                                    : ''}°C',
-                                                style: const TextStyle(
-                                                    fontSize: 18.0),
-                                              ), // TempMin
-                                            ],
-                                          ),
+                                          const SizedBox(height: 10.0),
                                         ],
                                       ),
-                                      const SizedBox(height: 10.0),
-                                    ],
-                                  ),
-                                ),
-                            ],
+                                    );
+                                  },
+                                );
+                              }
+                            },
                           ),
                         ),
                       ),
@@ -679,24 +770,34 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-  Future<void> addCityDialog(BuildContext context) async {
+  Future<void> seachCityDialog(BuildContext context) async {
     TextEditingController cityNameController = TextEditingController();
 
     String? cityName = await showDialog<String?>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Agiungere una città'),
+          title: const Text('Cercare una città'),
           content: TextField(
             controller: cityNameController,
             decoration: const InputDecoration(hintText: 'Nome della città'),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Aggiungi'),
+              child: const Text('Annulla'),
               onPressed: () {
+                Navigator.of(context).pop(); // Fermer la boîte de dialogue sans sélection
+              },
+            ),
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () async {
                 String cityName = cityNameController.text;
                 Navigator.of(context).pop(cityName);
+                if (cityName != null && cityName.isNotEmpty) {
+                  Provider.of<AppState>(context, listen: false).seachCity(cityName);
+                  await fetchWeatherForecastByCity(cityName);
+                }
               },
             ),
           ],
@@ -704,12 +805,9 @@ class _HomePageState extends State<HomePage> {
       },
     );
 
-    if (cityName != null && cityName.isNotEmpty) {
 
-      Provider.of<AppState>(context, listen: false).addCity(cityName);
-      await fetchWeatherForecast(cityName);
-    }
   }
+
 
 //Utilizzo della localisazione
 

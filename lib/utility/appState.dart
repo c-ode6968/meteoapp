@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 class AppState extends ChangeNotifier {
   List<String> addedCities = [];
 
-  void addCity(String cityName) {
+  void seachCity(String cityName) {
     addedCities.add(cityName);
     notifyListeners();
   }

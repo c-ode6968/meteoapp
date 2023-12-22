@@ -30,6 +30,19 @@ class _CityPageState extends State<CityPage> {
   }
 
 
+  void handleCitySelection(String selectedCity) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomePage(
+          selectedCity: selectedCity,
+          title: '',
+        ),
+      ),
+    );
+  }
+
+
   void filterCities(String query) {
     if (query.isNotEmpty) {
       List<String> tempList = [];
@@ -50,11 +63,14 @@ class _CityPageState extends State<CityPage> {
 
 
 
+/*
   void  addCityToList(String cityName) {
     setState(() {
       addedCities.add(cityName); // Aggiunge la città all'elenco delle città
     });
   }
+
+ */
   @override
   Widget build(BuildContext context) {
     addedCities.forEach((city) {
@@ -89,39 +105,27 @@ class _CityPageState extends State<CityPage> {
                 if (index < filteredCities.length) {
                   return ListTile(
                     title: Text(filteredCities[index]),
-                   onTap: () {
+                    onTap: () {
+                      handleCitySelection(filteredCities[index]);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HomePage(selectedCity: filteredCities[index],
-                            title: '',
-                          ),
+                          builder: (context) =>
+                              HomePage(selectedCity: filteredCities[index],
+                                title: '',
+
+                              ),
                         ),
                       );
                     },
                   );
-                } else {
-                  // Mostra le città aggiunte
-                  int addedIndex = index - filteredCities.length;
-                  return ListTile(
-                    title: Text(widget.addedCities[addedIndex]),
-                    onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomePage(selectedCity: widget.addedCities[addedIndex],
-                          title: '',
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }
-            },
-          ),
+                }
+              },
+            ),
           )
         ],
       ),
     );
   }
 }
+
