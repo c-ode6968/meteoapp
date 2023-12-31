@@ -39,11 +39,31 @@ class WeatherUtils {
     }else if(weatherCondition == 'Clear'){
       return 'assets/icons/clear.png';
     } else if(weatherCondition == 'Mist'){
-      return 'assets/icons/mist.png';}
-    else {
+      return 'assets/icons/mist.png';
+    }else if(weatherCondition == 'foggy'){
+      return 'assets/icons/foggy.png' ;
+    }else if(weatherCondition == 'hail'){
+      return 'assets/icons/hail.png' ;
+    }else if(weatherCondition == 'haze'){
+      return 'assets/icons/haze.png' ;
+    }else if(weatherCondition == 'overcast_mist'){
+      return 'assets/icons/overcast_mist.png' ;
+    }else if(weatherCondition == 'rain'){
+      return 'assets/icons/rain.png' ;
+    }else if(weatherCondition == 'rain_cloud'){
+      return 'assets/icons/rain_cloud.png' ;
+    }else if(weatherCondition == 'rainbow'){
+      return 'assets/icons/rainbow.png' ;
+    }else if(weatherCondition == 'rainfall'){
+      return 'assets/icons/rainfall.png' ;
+    }else if(weatherCondition == 'sky'){
+      return 'assets/icons/sky.png' ;
+    }else if(weatherCondition == 'raindrop'){
+      return 'assets/icons/raindrop.png' ;
+    }else if(weatherCondition == 'moisture'){
+      return 'assets/icons/moisture.png' ;
+    } else {
       return 'assets/icons/default.png';
     }
   }
-
-
 }

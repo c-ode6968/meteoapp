@@ -30,7 +30,7 @@ class _CityPageState extends State<CityPage> {
   }
 
 
-  void handleCitySelection(String selectedCity) {
+  void citySelection(String selectedCity) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -41,7 +41,6 @@ class _CityPageState extends State<CityPage> {
       ),
     );
   }
-
 
   void filterCities(String query) {
     if (query.isNotEmpty) {
@@ -61,16 +60,6 @@ class _CityPageState extends State<CityPage> {
     }
   }
 
-
-
-/*
-  void  addCityToList(String cityName) {
-    setState(() {
-      addedCities.add(cityName); // Aggiunge la città all'elenco delle città
-    });
-  }
-
- */
   @override
   Widget build(BuildContext context) {
     addedCities.forEach((city) {
@@ -106,7 +95,7 @@ class _CityPageState extends State<CityPage> {
                   return ListTile(
                     title: Text(filteredCities[index]),
                     onTap: () {
-                      handleCitySelection(filteredCities[index]);
+                      citySelection(filteredCities[index]);
                       Navigator.push(
                         context,
                         MaterialPageRoute(

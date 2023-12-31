@@ -20,12 +20,15 @@ void openMenu(BuildContext context) async {
           value: 1,
           child: Text('City'),
         ),
+        /*
         PopupMenuItem(
           value: 2,
           child: Text('Settings'),
         ),
+
+         */
         PopupMenuItem(
-          value: 3,
+          value: 2,
           child: Text('About'),
         ),
       ],
@@ -39,13 +42,16 @@ void openMenu(BuildContext context) async {
             context,
             MaterialPageRoute(builder: (context) => const CityPage(cityName: '', addedCities: [],)),
           );
+          /*
         } else if (result == 2) {
           // ignore: use_build_context_synchronously
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const SettingsPage()),
           );
-        }else if(result == 3){
+
+           */
+        }else if(result == 2){
           Navigator.push(context,
             MaterialPageRoute(builder: (context) => const AboutPage()),
           );
