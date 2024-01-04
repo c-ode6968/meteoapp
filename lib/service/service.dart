@@ -20,6 +20,7 @@ class MeteoService {
     } else {
       throw Exception('Failed to load weather data');
     }
+
   }
 
   Future<Map<String, dynamic>> fetchWeatherForecastByCity(String city) async {
