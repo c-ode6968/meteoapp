@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../utility/appState.dart';
+import 'appState.dart';
 
 Future<void> seachCityDialog(BuildContext context) async {
   TextEditingController cityNameController = TextEditingController();

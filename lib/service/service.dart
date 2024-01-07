@@ -1,31 +1,61 @@
 import 'dart:async';
-import 'dart:ffi';
-
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-import 'package:meteoapp/ui/cityList.dart';
-
+import 'package:dio/dio.dart';
 class MeteoService {
   final String apiKey;
 
   MeteoService(this.apiKey);
 
-  Future<Map<String, dynamic>> _fetchWeather(String endpoint, String city,
+  Future<Map<String, dynamic>> _fetchWeather(String endpoint, String query,
       {double? latitude, double? longitude}) async {
-    final response = await http.get(Uri.parse(
-        'http://api.openweathermap.org/data/2.5/$endpoint?q=$city&lat=${latitude ?? ''}&lon=${longitude ?? ''}&appid=$apiKey'));
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to load weather data');
+    final dio = Dio();
+
+    try {
+      Map<String, dynamic> queryParameters = {
+        'appid': apiKey,
+      };
+
+      if (latitude != null && longitude != null) {
+        queryParameters['lat'] = latitude;
+        queryParameters['lon'] = longitude;
+      } else if (query.isNotEmpty) {
+        queryParameters['q'] = query;
+      } else {
+
+        throw ArgumentError('Si prega di fornire una città o le coordinate geografiche.');
+      }
+
+      final response = await dio.get(
+        'http://api.openweathermap.org/data/2.5/$endpoint',
+        queryParameters: queryParameters,
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw DioException(
+          requestOptions: RequestOptions(path: response.requestOptions.path),
+          response: response,
+          error: 'Errore durante il caricamento dei dati',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioException.connectionError) {
+        throw DioException(
+          requestOptions: RequestOptions(path: e.requestOptions.path ?? ''),
+          error: 'Nessuna connessione internet',
+        );
+      } else {
+        throw Exception('Erreur inconnue: $e');
+      }
     }
 
   }
 
+
   Future<Map<String, dynamic>> fetchWeatherForecastByCity(String city) async {
     return _fetchWeather('weather', city);
   }
+
 
   Future<List<Map<String, dynamic>>> fetchHourlyWeatherForecast(
       String city) async {
@@ -35,7 +65,7 @@ class MeteoService {
           List<Map<String, dynamic>>.from(response['list']);
       return hourlyForecastList;
     } else {
-      throw Exception('Failed to load hourly weather forecast');
+      throw Exception('Impossibile caricare le previsioni meteo orarie');
     }
   }
 
@@ -74,15 +104,20 @@ class MeteoService {
       List<Map<String, dynamic>> dailyForecastList = List<Map<String, dynamic>>.from(response['list']);
       return dailyForecastList;
     }else{
-      throw Exception('Failed to load daily weather forecast');
+      throw Exception('Impossibile caricare le previsioni meteo orarie');
     }
   }
 
-  Future<Map<String, dynamic>> fetchWeatherForecastByCoordinates(
-      double latitude, double longitude) async {
-    return _fetchWeather('weather', '',
-        latitude: latitude, longitude: longitude);
+  Future<Map<String, dynamic>> fetchWeatherForecastByCoordinates(double latitude, double longitude, {
+    String? city,
+  }) async {
+    if ((latitude == null || longitude == null) && city == null) {
+      throw ArgumentError('Si prega di fornire le coordinate geografiche o una città.');
+    }
+
+    return _fetchWeather('weather', city ?? '', latitude: latitude, longitude: longitude);
   }
+
 
 }
 

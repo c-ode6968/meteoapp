@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'ui/home.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.red));
   runApp(
     ChangeNotifierProvider(
       create: (context) => AppState(),
