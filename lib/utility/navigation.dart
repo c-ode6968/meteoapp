@@ -10,8 +10,8 @@ void openMenu(BuildContext context) async {
       context: context,
       // Posiziona il menu sopra l'appBar
       position: RelativeRect.fromLTRB(
-        appBar.localToGlobal(const Offset(0.0, 0.0)).dx,
-        appBar.localToGlobal(const Offset(0.0, 0.0)).dy - appBar.size.height * 2,
+        appBar.localToGlobal(const Offset(0.0, 2.0)).dx,
+        appBar.localToGlobal(const Offset(0.0, 4.0)).dy - appBar.size.height * 2,
         appBar.localToGlobal(appBar.size.bottomLeft(Offset.zero)).dx,
         appBar.localToGlobal(const Offset(0.0, 0.0)).dy,
       ),

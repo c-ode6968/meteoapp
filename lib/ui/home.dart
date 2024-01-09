@@ -170,7 +170,6 @@ class _HomePageState extends State<HomePage> {
               size: 30.0,
             ),
             onPressed: () async {
-              //await addCityDialog(context);
               final selectedCityName = await seachCityDialog(context);
               if (cityName.isNotEmpty) {
                 await fetchWeatherForecastByCity(cityName);
@@ -293,7 +292,7 @@ class _HomePageState extends State<HomePage> {
                                                     .containsKey('rain') &&
                                                 weatherData?['rain'] != null
                                             ? '${weatherData?['rain']['1h'] ?? ''} mm'
-                                            : 'N/D',
+                                            : 'D/N',
                                       ),
                                       const Text('Pioggia'),
                                     ],
@@ -317,7 +316,7 @@ class _HomePageState extends State<HomePage> {
                                                 weatherData?['wind']
                                                     .containsKey('speed')
                                             ? '${weatherData?['wind']['speed']} m/s'
-                                            : '',
+                                            : 'D/N',
                                       ),
                                       const Text('Velocità del vento'),
                                     ],
@@ -341,7 +340,7 @@ class _HomePageState extends State<HomePage> {
                                                 weatherData?['main']
                                                     .containsKey('humidity')
                                             ? '${weatherData?['main']['humidity']} %'
-                                            : '',
+                                            : 'D/N',
                                       ),
                                       const Text('Humidité'),
                                     ],
@@ -525,7 +524,7 @@ class _HomePageState extends State<HomePage> {
                                               dailyForecast['dt'] * 1000));
                                     } else {
 
-                                      dayOfWeek = 'N/D';
+                                      dayOfWeek = 'D/N';
                                     }
                                     print(dailyForecast['dt_txt']);
                                     String weatherCondition =
@@ -631,7 +630,7 @@ class _HomePageState extends State<HomePage> {
                                 title: const Text('Visibilità'),
                                 trailing: Text(visibility.isNotEmpty
                                     ? '$visibility m'
-                                    : 'N/D'),
+                                    : 'D/N'),
                               ),
                               const SizedBox(height: 2),
                               ListTile(
@@ -639,7 +638,7 @@ class _HomePageState extends State<HomePage> {
                                     color: Color.fromARGB(255, 49, 188, 105)),
                                 title: const Text('Nuvolosità'),
                                 trailing: Text(
-                                    cloudiness.isNotEmpty ? cloudiness : 'N/D'),
+                                    cloudiness.isNotEmpty ? cloudiness : 'D/N'),
                               ),
                               const SizedBox(height: 2),
                               ListTile(
@@ -650,7 +649,7 @@ class _HomePageState extends State<HomePage> {
                                     ? DateFormat('HH:mm').format(
                                         DateTime.fromMillisecondsSinceEpoch(
                                             int.parse(sunrise) * 1000))
-                                    : 'N/D'),
+                                    : 'D/N'),
                               ),
                               const SizedBox(height: 2),
                               ListTile(
@@ -661,7 +660,7 @@ class _HomePageState extends State<HomePage> {
                                     ? DateFormat('HH:mm').format(
                                         DateTime.fromMillisecondsSinceEpoch(
                                             int.parse(sunset) * 1000))
-                                    : 'N/D'),
+                                    : 'D/N'),
                               ),
                               const SizedBox(height: 2),
                               ListTile(
@@ -669,7 +668,7 @@ class _HomePageState extends State<HomePage> {
                                     color: Color.fromARGB(255, 70, 162, 225)),
                                 title: const Text('Pressione'),
                                 trailing: Text(
-                                    pressure.isNotEmpty ? pressure : 'N/D'),
+                                    pressure.isNotEmpty ? pressure : 'D/N'),
                               ),
                             ],
                           ),

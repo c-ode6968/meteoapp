@@ -62,9 +62,6 @@ class _CityPageState extends State<CityPage> {
 
   @override
   Widget build(BuildContext context) {
-    addedCities.forEach((city) {
-      //print(city);
-    });
     return Scaffold(
       appBar: AppBar(
         title: const Text('Elenco delle città'),
