@@ -84,34 +84,6 @@ class MeteoService {
   }
 
 
-/*
-  Future<List<Map<String, dynamic>>> fetchDailyWeatherForecast({required String? selectedCity, double? latitude, double? longitude }) async {
-    if(selectedCity != null){
-      final response = await _fetchWeather('forecast', selectedCity);
-      if(response.containsKey('list')){
-        List<Map<String, dynamic>> dailyForecastList = List<Map<String, dynamic>>.from(response['list']);
-        return dailyForecastList;
-      }else{
-        throw Exception('Failed to load daily weather forecast');
-      }
-    }else{
-      if(latitude != null && longitude != null){
-        final response = await _fetchWeather('forecast', '', latitude: latitude, longitude: longitude);
-        if(response.containsKey('list')){
-          List<Map<String, dynamic>> dailyForecastList = List<Map<String, dynamic>>.from(response['list']);
-          return dailyForecastList;
-        }else{
-          throw Exception('Failed to load daily weather forecast');
-        }
-      }else{
-        throw Exception('Please specify a city or provide coordinates');
-      }
-    }
-  }
-
-*/
-
-  /*
   Future<List<Map<String, dynamic>>> fetchDailyWeatherForecast(
       String city) async {
     final response = await _fetchWeather('forecast', city);
@@ -120,49 +92,6 @@ class MeteoService {
       return dailyForecastList;
     }else{
       throw Exception('Impossibile caricare le previsioni meteo orarie');
-    }
-  }
-   */
-
-  Future<List<Map<String, dynamic>>> fetchDailyWeatherForecast(String city) async {
-    try {
-      // Chiama all'api per ottenere le previsioni giornaliere
-      final response = await _fetchWeather('forecast', city);
-
-      if (response.containsKey('list')) {
-        List<Map<String, dynamic>> dailyForecastList = [];
-        //Crea una mappa per raggruppare le previsioni giornaliere
-        Map<String, List<Map<String, dynamic>>> groupedByDate = {};
-
-        for (Map<String, dynamic> forecast in response['list'] ?? []) {
-          // Estrarre la data da ogni previsione
-          String? date = forecast['dt_txt'];
-
-          // Verificare se la data non è nulla prima di elaborarla
-          if (date != null) {
-            // Verificare se la data esiste già nella mappa
-            if (groupedByDate.containsKey(date)) {
-              // Aggiungere la previsione alla lista esistente per questa data
-              groupedByDate[date]?.add(forecast);
-            } else {
-              // Creare una nuova lista per questa data e aggiungere la previsione
-              groupedByDate[date] = [forecast];
-            }
-          }
-        }
-
-        // Aggiungere le liste di previsioni raggruppate alla lista finale
-        groupedByDate.forEach((date, forecasts) {
-          dailyForecastList.add({'date': date, 'forecasts': forecasts});
-        });
-
-        return dailyForecastList;
-      } else {
-        throw Exception('Impossibile caricare le previsioni meteo orarie');
-      }
-    } catch (e) {
-      print('Error: $e');
-      return [];
     }
   }
 

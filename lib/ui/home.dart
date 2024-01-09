@@ -199,8 +199,9 @@ class _HomePageState extends State<HomePage> {
                   children: <Widget>[
                     //prima card
                     SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.5,
+                      height: MediaQuery.of(context).size.height * 0.4,
                       width: MediaQuery.of(context).size.width * 0.5,
+
                       child: Card(
                         color: myCostanti.secondaryColor.withOpacity(.8),
                         shape: RoundedRectangleBorder(
@@ -274,7 +275,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               const SizedBox(height: 20),
                               const SizedBox(
-                                  height: 20), // Spaziatura tra gli elementi
+                                  width: 20), // Spaziatura tra gli elementi
                               Row(
                                 children: [
                                   Column(
@@ -282,8 +283,8 @@ class _HomePageState extends State<HomePage> {
                                     children: [
                                       Image.asset(
                                         'assets/icons/rain.png',
-                                        width: 50,
-                                        height: 50,
+                                        width: 40,
+                                        height: 40,
                                       ),
                                       const SizedBox(height: 5),
                                       Text(
@@ -298,14 +299,14 @@ class _HomePageState extends State<HomePage> {
                                     ],
                                   ),
                                   const SizedBox(
-                                      width: 35), // Spaziatura tra le immagini
+                                      width: 30), // Spaziatura tra le immagini
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Image.asset(
                                         'assets/icons/fog.png',
-                                        width: 50,
-                                        height: 50,
+                                        width: 40,
+                                        height: 40,
                                       ),
                                       const SizedBox(height: 5),
                                       Text(
@@ -328,8 +329,8 @@ class _HomePageState extends State<HomePage> {
                                     children: [
                                       Image.asset(
                                         'assets/icons/humidity.png',
-                                        width: 50,
-                                        height: 50,
+                                        width: 40,
+                                        height: 40,
                                       ),
                                       const SizedBox(height: 5),
                                       Text(
@@ -477,8 +478,7 @@ class _HomePageState extends State<HomePage> {
                         child: Padding(
                           padding: const EdgeInsets.all(15.0),
                           child: FutureBuilder<List<Map<String, dynamic>>>(
-                            future: meteoService
-                                .fetchDailyWeatherForecast(selectedCity),
+                            future: meteoService.fetchDailyWeatherForecast(selectedCity),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
@@ -486,7 +486,7 @@ class _HomePageState extends State<HomePage> {
                               } else if (snapshot.hasError) {
                                 return Text('Error: ${snapshot.error}');
                               } else if (!snapshot.hasData ||
-                                  snapshot.data!.isEmpty) {
+                                  snapshot.data == null) {
                                 return const Text(
                                     'Nessuna previsione giornaliera disponibile');
                               } else {
@@ -494,11 +494,7 @@ class _HomePageState extends State<HomePage> {
                                     snapshot.data!;
                                 return ListView.builder(
                                   scrollDirection: Axis.vertical,
-                                  itemCount: dailyForecastList.length > 5
-                                      ? 5
-                                      : dailyForecastList.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
+                                  itemBuilder:(BuildContext context, int index) {
                                     double moyenneMinTemp = 0.0;
                                     double moyenneMaxTemp = 0.0;
                                     var dailyForecast =
