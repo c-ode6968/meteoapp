@@ -178,7 +178,7 @@ class _HomePageState extends State<HomePage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        CityPage(addedCities: addedCities, cityName: cityName),
+                        CityPage(cityName: cityName),
                   ),
                 );
               }
@@ -197,8 +197,6 @@ class _HomePageState extends State<HomePage> {
               child: ListView(
                   // Utilisazione di una ListView per Scrollare verticalmente
                   children: <Widget>[
-
-
                     //prima card
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.5,
@@ -501,33 +499,42 @@ class _HomePageState extends State<HomePage> {
                                       : dailyForecastList.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
+                                    double moyenneMinTemp = 0.0;
+                                    double moyenneMaxTemp = 0.0;
                                     var dailyForecast =
                                         dailyForecastList[index];
-                                    double moyenneMinTemp =
-                                        dailyForecast['main']['temp_min'] -
-                                            273.15;
-                                    double moyenneMaxTemp =
-                                        dailyForecast['main']['temp_max'] -
-                                            273.15;
 
-                                    //String dayOfWeek = DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(dailyForecast['dt_txt'] * 1000));
-                                    //String dayOfWeek = DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(int.parse(dailyForecast['dt']) * 1000));
-                                    String dayOfWeek = DateFormat('EEEE')
-                                        .format(
-                                            DateTime.fromMillisecondsSinceEpoch(
-                                                dailyForecast['dt'] * 1000));
+                                    if (dailyForecast['main'] != null &&
+                                        dailyForecast['main']['temp_min'] !=
+                                            null &&
+                                        dailyForecast['main']['temp_max'] !=
+                                            null) {
+                                      moyenneMinTemp = (dailyForecast['main']
+                                                  ['temp_min'] ??
+                                              0) -
+                                          273.15;
+                                      moyenneMaxTemp = (dailyForecast['main']
+                                                  ['temp_max'] ??
+                                              0) -
+                                          273.15;
+                                    } else {
 
+                                    }
+
+                                    String dayOfWeek = '';
+
+                                    if (dailyForecast['dt'] != null) {
+                                      dayOfWeek = DateFormat('EEEE').format(
+                                          DateTime.fromMillisecondsSinceEpoch(
+                                              dailyForecast['dt'] * 1000));
+                                    } else {
+
+                                      dayOfWeek = 'N/D';
+                                    }
                                     print(dailyForecast['dt_txt']);
                                     String weatherCondition =
                                         dailyForecast['weather'][0]['main'];
-                                    Image.asset(
-                                      WeatherUtils.getImagePath(
-                                          weatherCondition,
-                                          width: 30,
-                                          height: 30),
-                                      width: 50,
-                                      height: 50,
-                                    );
+
                                     return SizedBox(
                                       width: 300.0,
                                       child: Column(
@@ -682,21 +689,26 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+
+
+
 //Utilizzo della localisazione
   Future<void> checkLocationAndFetchWeather() async {
-    await _getCurrentLocation();
+    Position? position = await _getCurrentLocation();
+
+    if (position == null) {
+      //Gestisce il caso in cui la posizione è nulla
+      return;
+    }
+
     if (!await Geolocator.isLocationServiceEnabled()) {
       await showLocationEnableDialog(context);
     }
-    if (await Geolocator.isLocationServiceEnabled()) {
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-     await fetchWeatherForecastByCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-    }
+
+    await fetchWeatherForecastByCoordinates(
+      position.latitude,
+      position.longitude,
+    );
   }
 
   Future<void> showLocationEnableDialog(context) async {
@@ -723,28 +735,34 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _getCurrentLocation() async {
+  Future<Position?> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return;
+      return null; //Posizione non disponibile se il servizio di localisazione non è attivato
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return;
+        return null; //Posizione non disponibile se la permisione non è accetata
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      return;
+      return null;//Posizione non disponibile se la permizione è rifuitata deffinitivamente
     }
 
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      return position; // Ritorna la posizione se disponibile
+    } catch (e) {
+      return null;
+    }
   }
-
 }
+

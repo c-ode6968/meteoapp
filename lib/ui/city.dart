@@ -5,8 +5,8 @@ import 'cityList.dart';
 
 
 class CityPage extends StatefulWidget {
-  final List<String> addedCities;
-  const CityPage({Key? key, required String cityName, required this.addedCities}) : super(key: key);
+
+  const CityPage({Key? key, required String cityName,}) : super(key: key);
 
   @override
   _CityPageState createState() => _CityPageState();
@@ -25,7 +25,7 @@ class _CityPageState extends State<CityPage> {
   void initState() {
     super.initState();
     cityData = CityData();
-    addedCities = widget.addedCities;
+    //addedCities = widget.addedCities;
     filteredCities = cityData.cities;
   }
 
@@ -89,7 +89,7 @@ class _CityPageState extends State<CityPage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: filteredCities.length + widget.addedCities.length,
+              itemCount: filteredCities.length ,
               itemBuilder: (context, index) {
                 if (index < filteredCities.length) {
                   return ListTile(

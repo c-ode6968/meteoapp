@@ -8,7 +8,7 @@ class AboutPage extends StatelessWidget {
 
   const AboutPage({Key? key});
 
-  //Gestion des URL .
+  //Gestione  degli URL .
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url); //Conversione degli URL in Uri.
     if (await canLaunchUrl(uri)) {

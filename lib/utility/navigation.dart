@@ -4,9 +4,11 @@ import 'package:meteoapp/ui/city.dart';
 import '../ui/about.dart';
 
 void openMenu(BuildContext context) async {
+  // Trova la posizione dell'appBar nella gerarchia degli oggetti di rendering
     final RenderBox appBar = context.findRenderObject() as RenderBox;
     final result = await showMenu(
       context: context,
+      // Posiziona il menu sopra l'appBar
       position: RelativeRect.fromLTRB(
         appBar.localToGlobal(const Offset(0.0, 0.0)).dx,
         appBar.localToGlobal(const Offset(0.0, 0.0)).dy - appBar.size.height * 2,
@@ -24,11 +26,13 @@ void openMenu(BuildContext context) async {
         ),
       ],
     );
+    // Gestisce le azioni in base alla selezione del menu
       if (result != null) {
         //Logica per gestire le azioni in base alla selezione del menu
         if (result == 1) {
+          // Naviga alla pagina delle città
           Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const CityPage(cityName: '', addedCities: [],)),
+            MaterialPageRoute(builder: (context) => const CityPage(cityName: '',)),
           );
 
         }else if(result == 2){
